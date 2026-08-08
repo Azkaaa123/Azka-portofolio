@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Azka Ni'ma Alifah - Portofolio</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -149,17 +150,27 @@ openModal.addEventListener("touchstart",open,{passive:true});
 closeModal.addEventListener("click",close);
 modal.addEventListener("click",e=>{if(e.target===modal)close()});
 
-// 3. FORM VALIDASI pakai if-else (Syarat 3)
-const form=document.getElementById("form"),msg=document.getElementById("msg");
-form.addEventListener("submit",e=>{
+// 3. FORM VALIDASI + SIMPAN KE SUPABASE (Syarat Web Dinamis)
+const SUPABASE_URL = "https://wjrrlkpijzuygcsxcanayrv.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqcnJsa3Bpamp1eWdjc3hjYW5heXJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNzUyMzgsImV4cCI6MjA3MDY1MTIzOH0.mqF4TH1GRYh8k-z1XikAhckdyncZ5c-BiH_ehkgzQdQ";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const form=document.getElementById("formKontak");
+const msg=document.getElementById("msg");
+form.addEventListener("submit",async e=>{
   e.preventDefault();
-  const n=document.getElementById("nama").value.trim();
-  const em=document.getElementById("email").value.trim();
-  const p=document.getElementById("pesan").value.trim();
-  if(n===""){msg.textContent="❌ Nama wajib diisi!";msg.style.color="#ef4444";}
-  else if(em===""||!em.includes("@")){msg.textContent="❌ Email tidak valid!";msg.style.color="#ef4444";}
-  else if(p===""){msg.textContent="❌ Pesan tidak boleh kosong!";msg.style.color="#ef4444";}
-  else{msg.textContent=`✅ Makasih ${n}! Pesanmu udah terkirim 💙`;msg.style.color="#2563eb";form.reset();}
+  const n=document.getElementById("nama").value;
+  const em=document.getElementById("email").value;
+  const p=document.getElementById("pesan").value;
+  if(n===""){msg.textContent="❌ Nama wajib diisi";return}
+  else if(em===""||!em.includes("@")){msg.textContent="❌ Email tidak valid";return}
+  else if(p===""){msg.textContent="❌ Pesan wajib diisi";return}
+  else{
+    msg.textContent="⏳ Mengirim...";
+    const {error}=await supabaseClient.from("pesan").insert([{nama:n,email:em,pesan:p}]);
+    if(error){msg.textContent="❌ Gagal: "+error.message}
+    else{msg.textContent=`✅ Makasih ${n}! Pesan kamu sudah kesimpan!`;form.reset()}
+  }
 });
 </script>
 </body>
